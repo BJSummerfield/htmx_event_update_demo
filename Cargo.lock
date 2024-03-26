@@ -280,6 +280,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d231dfb89cfffdbc30e7fc41579ed6066ad03abda9e567ccafae602b97ec5024"
 
 [[package]]
+name = "htmx_event_update_demo"
+version = "0.1.0"
+dependencies = [
+ "askama_axum",
+ "axum",
+ "fake",
+ "tokio",
+ "tokio-stream",
+]
+
+[[package]]
 name = "http"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -642,17 +653,6 @@ name = "ryu"
 version = "1.0.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e86697c916019a8588c99b5fac3cead74ec0b4b819707a682fd4d23fa0ce1ba1"
-
-[[package]]
-name = "samurai_manager"
-version = "0.1.0"
-dependencies = [
- "askama_axum",
- "axum",
- "fake",
- "tokio",
- "tokio-stream",
-]
 
 [[package]]
 name = "scopeguard"

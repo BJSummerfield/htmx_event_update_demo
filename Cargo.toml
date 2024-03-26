@@ -1,5 +1,5 @@
 [package]
-name = "samurai_manager"
+name = "htmx_event_update_demo"
 version = "0.1.0"
 edition = "2021"
 
