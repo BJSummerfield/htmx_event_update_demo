@@ -2,12 +2,12 @@ use crate::models::{Data, User, Users};
 use crate::AppState;
 use askama_axum::Template;
 use axum::{
-    extract::State,
+    extract::{Query, State},
     response::{Html, IntoResponse},
     Form,
 };
 use serde::Deserialize;
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 use tokio::sync::Mutex;
 
 #[derive(Template)]
@@ -32,7 +32,11 @@ pub struct UserTableTemplate {
     sort_order: String,
     sort_order_icon: String,
 }
-
+#[derive(Template)]
+#[template(path = "user_row.html")]
+pub struct UserRowTemplate {
+    user: User,
+}
 pub struct Handler;
 
 impl Handler {
@@ -57,7 +61,23 @@ impl Handler {
 
         Html(template.render().unwrap())
     }
+    pub async fn user(
+        State(app_state): State<AppState>,
+        Query(params): Query<HashMap<String, String>>,
+    ) -> impl IntoResponse {
+        let user_id = params.get("id").and_then(|id| id.parse().ok()).unwrap_or(0);
+        let data = app_state.data.lock().await;
+        let users = data.users.lock().await;
+        let user = users.get(&user_id).cloned();
 
+        match user {
+            Some(user) => {
+                let template = UserRowTemplate { user };
+                Html(template.render().unwrap())
+            }
+            None => Html("User not found".to_string()),
+        }
+    }
     pub async fn users(
         State(app_state): State<AppState>,
         Form(params): Form<UsersParams>,

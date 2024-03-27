@@ -26,7 +26,7 @@ impl EventEmitter {
                     .data(format!("User Updated: ID:{}", user_id));
 
                 let update_event = Event::default()
-                    .event(format!("user_{}", user_id))
+                    .event(format!("update_user_{}", user_id))
                     .data(user_id.to_string());
 
                 let _ = self.sender.send(message_event);

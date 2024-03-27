@@ -12,7 +12,8 @@ impl Users {
     ) -> Vec<User> {
         let mut users = {
             let data = data.lock().await;
-            data.users.values().cloned().collect::<Vec<User>>()
+            let users_map = data.users.lock().await;
+            users_map.values().cloned().collect::<Vec<User>>()
         };
 
         if let Some(column) = sort_by {

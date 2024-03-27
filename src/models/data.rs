@@ -12,11 +12,11 @@ use rand::Rng;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
-use tokio::time;
+use tokio::{sync::Mutex, time};
 
 #[derive(Debug, Clone)]
 pub struct Data {
-    pub users: HashMap<u32, User>,
+    pub users: Arc<Mutex<HashMap<u32, User>>>,
     event_emitter: Arc<EventEmitter>,
 }
 
@@ -35,15 +35,15 @@ impl Data {
         }
 
         let data = Data {
-            users,
+            users: Arc::new(Mutex::new(users)),
             event_emitter,
         };
         data.clone().event_loop();
         data
     }
 
-    pub fn update_random_user(&mut self) -> Option<&User> {
-        if let Some(user_id) = self.get_random_user_id() {
+    async fn update_random_user(&mut self) {
+        if let Some(user_id) = self.get_random_user_id().await {
             let updated_user = User::new(
                 user_id,
                 FirstName(EN).fake(),
@@ -51,36 +51,35 @@ impl Data {
                 Faker.fake(),
                 SafeEmail(EN).fake(),
             );
-            self.users.insert(user_id, updated_user);
+            let mut users_map = self.users.lock().await;
+            users_map.insert(user_id, updated_user.clone()); // Clone the updated user if needed
 
             // Emit the updated user event
             self.event_emitter.send(SseEvent::UserUpdated(user_id));
 
-            self.users.get(&user_id)
-        } else {
-            None
+            // Retrieve the updated user
+            let user = users_map.get(&user_id);
         }
     }
 
-    fn get_random_user_id(&self) -> Option<u32> {
-        if self.users.is_empty() {
+    async fn get_random_user_id(&self) -> Option<u32> {
+        let users = self.users.lock().await;
+        if users.is_empty() {
             None
         } else {
             let mut rng = rand::thread_rng();
-            let random_index = rng.gen_range(0..self.users.len());
-            self.users.keys().cloned().nth(random_index)
+            let random_index = rng.gen_range(0..users.len());
+            users.keys().cloned().nth(random_index)
         }
     }
 
-    fn event_loop(self) {
-        let data = Arc::new(tokio::sync::Mutex::new(self));
-
+    fn event_loop(&self) {
+        let mut cloned_self = self.clone(); // Clone self before moving into the closure
         tokio::spawn(async move {
-            let mut interval = time::interval(Duration::from_secs(5));
+            let mut interval = time::interval(Duration::from_millis(500));
             loop {
                 interval.tick().await;
-                let mut data = data.lock().await;
-                data.update_random_user();
+                cloned_self.update_random_user().await; // Call update_random_user on cloned self
             }
         });
     }

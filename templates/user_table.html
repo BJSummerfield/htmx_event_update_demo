@@ -33,7 +33,8 @@
         </thead>
         <tbody>
             {% for user in users %}
-            <tr>
+            <tr id="user-{{ user.id }}" hx-get="/user?id={{ user.id }}" hx-trigger="sse:update_user_{{ user.id }}"
+                hx-target="this">
                 <td>{{ user.id }}</td>
                 <td>{{ user.first_name }}</td>
                 <td>{{ user.last_name }}</td>

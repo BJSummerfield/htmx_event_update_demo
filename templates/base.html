@@ -12,11 +12,11 @@
     <script src="https://unpkg.com/htmx.org@1.9.11/dist/ext/sse.js"></script>
 </head>
 
-<body>
+<body hx-ext="sse" sse-connect="/events">
     <div id="main" class="container">
         {% block content %}{% endblock %}
     </div>
-    <div id=notifications hx-ext="sse" sse-connect="/events" sse-swap="message">
+    <div id=notifications sse-swap="message">
         Contents of this box will be updated in real time
         with every SSE message received from the chatroom.
     </div>

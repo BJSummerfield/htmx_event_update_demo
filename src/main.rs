@@ -36,6 +36,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/", get(Handler::index))
+        .route("/user", get(Handler::user))
         .route("/users", post(Handler::users))
         .nest_service("/static", get_service(ServeDir::new("./static")))
         .route("/events", get(sse_handler))
