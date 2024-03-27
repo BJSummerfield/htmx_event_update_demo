@@ -1,6 +1,6 @@
 use axum::{
     response::sse::{Event, KeepAlive, Sse},
-    routing::{get, get_service},
+    routing::{get, get_service, post},
     Extension, Router,
 };
 mod models;
@@ -19,6 +19,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/", get(Handler::index))
+        .route("/users", post(Handler::users))
         .layer(Extension(data.clone()))
         .nest_service("/static", get_service(ServeDir::new("./static")))
         .route("/events", get(sse_handler));

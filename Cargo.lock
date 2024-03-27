@@ -299,6 +299,7 @@ dependencies = [
  "askama_axum",
  "axum",
  "fake",
+ "serde",
  "tokio",
  "tokio-stream",
  "tower-http",
