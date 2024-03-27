@@ -59,6 +59,11 @@ tr:hover {
 
 .sort-icon {
     margin-left: 5px;
+    visibility: hidden;
+}
+
+.sort-icon.visible {
+    visibility: visible;
 }
 
 @media screen and (max-width: 600px) {

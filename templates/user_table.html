@@ -1,31 +1,33 @@
-<form id="sort-form" method="post" action="/users" hx-post="/users" hx-target="#main">
+<form id="sort-form" method="post" action="/users" hx-post="/users" hx-target="#user-table">
     <table>
         <thead>
             <tr>
                 <th>
                     <input type="submit" name="sort_by" value="id">
                     ID
-                    {% if sort_by == "id" %}<span class="sort-icon">{{ sort_order_icon }}</span>{% endif %}
+                    <span class='sort-icon{% if sort_by == "id" %} visible{% endif %}'>{{ sort_order_icon }}</span>
                 </th>
                 <th>
                     <input type="submit" name="sort_by" value="first_name">
                     First Name
-                    {% if sort_by == "first_name" %}<span class="sort-icon">{{ sort_order_icon }}</span>{% endif %}
+                    <span class='sort-icon{% if sort_by == "first_name" %} visible{% endif %}'>{{ sort_order_icon
+                        }}</span>
                 </th>
                 <th>
                     <input type="submit" name="sort_by" value="last_name">
                     Last Name
-                    {% if sort_by == "last_name" %}<span class="sort-icon">{{ sort_order_icon }}</span>{% endif %}
+                    <span class='sort-icon{% if sort_by == "last_name" %} visible{% endif %}'>{{ sort_order_icon
+                        }}</span>
                 </th>
                 <th>
                     <input type="submit" name="sort_by" value="age">
                     Age
-                    {% if sort_by == "age" %}<span class="sort-icon">{{ sort_order_icon }}</span>{% endif %}
+                    <span class='sort-icon{% if sort_by == "age" %} visible{% endif %}'>{{ sort_order_icon }}</span>
                 </th>
                 <th>
                     <input type="submit" name="sort_by" value="email">
                     Email
-                    {% if sort_by == "email" %}<span class="sort-icon">{{ sort_order_icon }}</span>{% endif %}
+                    <span class='sort-icon{% if sort_by == "email" %} visible{% endif %}'>{{ sort_order_icon }}</span>
                 </th>
             </tr>
         </thead>
