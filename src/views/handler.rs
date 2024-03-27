@@ -1,8 +1,10 @@
 use crate::models::{Data, User, Users};
+use crate::AppState;
 use askama_axum::Template;
 use axum::{
+    extract::State,
     response::{Html, IntoResponse},
-    Extension, Form,
+    Form,
 };
 use serde::Deserialize;
 use std::sync::Arc;
@@ -34,7 +36,10 @@ pub struct UserTableTemplate {
 pub struct Handler;
 
 impl Handler {
-    pub async fn index(Extension(data): Extension<Arc<Mutex<Data>>>) -> impl IntoResponse {
+    pub async fn index(State(app_state): State<AppState>) -> impl IntoResponse {
+        let data = app_state.data.clone();
+        println!("{:?}", data);
+
         let user_template = Self::get_users_template(
             UsersParams {
                 sort_by: Some("id".to_string()),
@@ -54,10 +59,10 @@ impl Handler {
     }
 
     pub async fn users(
-        Extension(data): Extension<Arc<Mutex<Data>>>,
+        State(app_state): State<AppState>,
         Form(params): Form<UsersParams>,
     ) -> impl IntoResponse {
-        let template = Self::get_users_template(params, data.clone()).await;
+        let template = Self::get_users_template(params, app_state.data.clone()).await;
         Html(template.render().unwrap())
     }
 
