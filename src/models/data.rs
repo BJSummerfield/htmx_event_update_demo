@@ -1,4 +1,5 @@
 use super::User;
+use crate::utils::{EventEmitter, SseEvent};
 use fake::{
     faker::{
         internet::raw::SafeEmail,
@@ -9,14 +10,18 @@ use fake::{
 };
 use rand::Rng;
 use std::collections::HashMap;
+use std::sync::Arc;
+use std::time::Duration;
+use tokio::time;
 
 #[derive(Debug, Clone)]
 pub struct Data {
     pub users: HashMap<u32, User>,
+    event_emitter: Arc<EventEmitter>,
 }
 
 impl Data {
-    pub fn new() -> Data {
+    pub fn new(event_emitter: Arc<EventEmitter>) -> Data {
         let mut users = HashMap::new();
         for i in 1..=24 {
             let user = User::new(
@@ -28,7 +33,13 @@ impl Data {
             );
             users.insert(i, user);
         }
-        Data { users }
+
+        let data = Data {
+            users,
+            event_emitter,
+        };
+        data.clone().event_loop();
+        data
     }
 
     pub fn update_random_user(&mut self) -> Option<&User> {
@@ -41,6 +52,10 @@ impl Data {
                 SafeEmail(EN).fake(),
             );
             self.users.insert(user_id, updated_user);
+
+            // Emit the updated user event
+            self.event_emitter.send(SseEvent::UserUpdated(user_id));
+
             self.users.get(&user_id)
         } else {
             None
@@ -55,5 +70,18 @@ impl Data {
             let random_index = rng.gen_range(0..self.users.len());
             self.users.keys().cloned().nth(random_index)
         }
+    }
+
+    fn event_loop(self) {
+        let data = Arc::new(tokio::sync::Mutex::new(self));
+
+        tokio::spawn(async move {
+            let mut interval = time::interval(Duration::from_secs(5));
+            loop {
+                interval.tick().await;
+                let mut data = data.lock().await;
+                data.update_random_user();
+            }
+        });
     }
 }

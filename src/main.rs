@@ -4,7 +4,7 @@ use axum::{
     routing::{get, get_service, post},
     Router,
 };
-use futures::StreamExt;
+use futures::stream::StreamExt;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tokio_stream::wrappers::BroadcastStream;
@@ -15,7 +15,7 @@ mod utils;
 mod views;
 
 use models::Data;
-use utils::{EventEmitter, SseEvent};
+use utils::EventEmitter;
 use views::Handler;
 
 #[derive(Clone)]
@@ -27,7 +27,7 @@ pub struct AppState {
 #[tokio::main]
 async fn main() {
     let event_emitter = Arc::new(EventEmitter::new());
-    let data = Arc::new(Mutex::new(Data::new()));
+    let data = Arc::new(Mutex::new(Data::new(event_emitter.clone())));
 
     let app_state = AppState {
         data: data.clone(),
@@ -49,10 +49,8 @@ async fn sse_handler(
     State(app_state): State<AppState>,
 ) -> Sse<impl futures::Stream<Item = Result<Event, axum::Error>>> {
     let stream =
-        BroadcastStream::new(app_state.event_emitter.subscribe()).map(|event| match event {
-            Ok(SseEvent::UserUpdated(user_id)) => Ok(Event::default()
-                .event("user_updated")
-                .data(user_id.to_string())),
+        BroadcastStream::new(app_state.event_emitter.subscribe()).map(|result| match result {
+            Ok(event) => Ok(event),
             Err(e) => Err(axum::Error::new(e)),
         });
 
