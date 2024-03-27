@@ -1,6 +1,6 @@
 use axum::{
     response::sse::{Event, KeepAlive, Sse},
-    routing::get,
+    routing::{get, get_service},
     Extension, Router,
 };
 mod models;
@@ -10,14 +10,17 @@ use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::Mutex;
 use tokio_stream::{wrappers::IntervalStream, StreamExt};
-use views::Handle;
+use tower_http::services::ServeDir;
+use views::Handler;
 
 #[tokio::main]
 async fn main() {
     let data = Arc::new(Mutex::new(Data::new()));
+
     let app = Router::new()
-        .route("/", get(Handle::index))
+        .route("/", get(Handler::index))
         .layer(Extension(data.clone()))
+        .nest_service("/static", get_service(ServeDir::new("./static")))
         .route("/events", get(sse_handler));
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();

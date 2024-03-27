@@ -1,3 +1,3 @@
-mod handlers;
+mod handler;
 
-pub use handlers::Handle;
+pub use handler::Handler;
