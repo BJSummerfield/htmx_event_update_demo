@@ -6,7 +6,6 @@ use axum::{
 };
 use futures::stream::StreamExt;
 use std::sync::Arc;
-use tokio::sync::Mutex;
 use tokio_stream::wrappers::BroadcastStream;
 use tower_http::services::ServeDir;
 
@@ -20,14 +19,14 @@ use views::Handler;
 
 #[derive(Clone)]
 pub struct AppState {
-    data: Arc<Mutex<Data>>,
+    data: Arc<Data>,
     event_emitter: Arc<EventEmitter>,
 }
 
 #[tokio::main]
 async fn main() {
     let event_emitter = Arc::new(EventEmitter::new());
-    let data = Arc::new(Mutex::new(Data::new(event_emitter.clone())));
+    let data = Arc::new(Data::new(event_emitter.clone()));
 
     let app_state = AppState {
         data: data.clone(),

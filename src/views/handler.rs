@@ -8,7 +8,6 @@ use axum::{
 };
 use serde::Deserialize;
 use std::{collections::HashMap, sync::Arc};
-use tokio::sync::Mutex;
 
 #[derive(Template)]
 #[template(path = "index.html")]
@@ -66,8 +65,7 @@ impl Handler {
         Query(params): Query<HashMap<String, String>>,
     ) -> impl IntoResponse {
         let user_id = params.get("id").and_then(|id| id.parse().ok()).unwrap_or(0);
-        let data = app_state.data.lock().await;
-        let users = data.users.lock().await;
+        let users = app_state.data.users.lock().await;
         let user = users.get(&user_id).cloned();
 
         match user {
@@ -86,10 +84,7 @@ impl Handler {
         Html(template.render().unwrap())
     }
 
-    pub async fn get_users_template(
-        params: UsersParams,
-        data: Arc<Mutex<Data>>,
-    ) -> UserTableTemplate {
+    pub async fn get_users_template(params: UsersParams, data: Arc<Data>) -> UserTableTemplate {
         let sort_by = params.sort_by.unwrap_or_else(|| "id".to_string());
         let prev_sort_by = params.prev_sort_by.unwrap_or_else(|| "".to_string());
         let sort_order = if sort_by == prev_sort_by {

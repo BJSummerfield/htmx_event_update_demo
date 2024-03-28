@@ -1,17 +1,15 @@
 use super::{data::Data, user::User};
 use std::sync::Arc;
-use tokio::sync::Mutex;
 
 pub struct Users;
 
 impl Users {
     pub async fn list_users(
-        data: Arc<Mutex<Data>>,
+        data: Arc<Data>,
         sort_by: Option<String>,
         sort_order: Option<String>,
     ) -> Vec<User> {
         let mut users = {
-            let data = data.lock().await;
             let users_map = data.users.lock().await;
             users_map.values().cloned().collect::<Vec<User>>()
         };
