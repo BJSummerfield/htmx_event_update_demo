@@ -31,18 +31,18 @@
                 </th>
             </tr>
         </thead>
-        <tbody>
-            {% for user in users %}
+        {% for user in users %}
+        <tbody id="user-container-{{ user.id }}">
             <tr id="user-{{ user.id }}" hx-get="/user?id={{ user.id }}" hx-trigger="sse:update_user_{{ user.id }}"
-                hx-target="this">
+                hx-target="this" hx-swap="outerHTML">
                 <td>{{ user.id }}</td>
                 <td>{{ user.first_name }}</td>
                 <td>{{ user.last_name }}</td>
                 <td>{{ user.age }}</td>
                 <td>{{ user.email }}</td>
             </tr>
-            {% endfor %}
         </tbody>
+        {% endfor %}
     </table>
     <input type="hidden" name="sort_order" value="{{ sort_order }}">
     <input type="hidden" name="prev_sort_by" value="{{ sort_by }}">

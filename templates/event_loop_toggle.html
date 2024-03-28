@@ -1,21 +1,10 @@
-{% extends "base.html" %}
-
-{% block content %}
-<h1>User List</h1>
-<div id="user-table">
-    {{ content|safe }}
-</div>
-
-{% endblock %}
-
-{% block event_loop_toggle %}
 <div id="toggle-container" class="toggle-container">
     <label class="toggle-label">Event Loop:</label>
     <div class="toggle-wrapper">
         <input type="checkbox" id="event-loop-toggle" class="toggle-checkbox" hx-post="/toggle-event-loop"
-               hx-target="#toggle-container" hx-swap="outerHTML" hx-trigger="click" {% if event_loop_toggle %}checked{% endif %}>
+            hx-target="#toggle-container" hx-swap="outerHTML" hx-trigger="click" {% if event_loop_toggle %}checked{%
+            endif %}>
         <label for="event-loop-toggle" class="toggle-switch"></label>
         <span id="toggle-text" class="toggle-text">{% if event_loop_toggle %}On{% else %}Off{% endif %}</span>
     </div>
 </div>
-{% endblock %}

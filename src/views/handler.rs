@@ -14,6 +14,7 @@ use std::{collections::HashMap, sync::Arc};
 struct IndexTemplate {
     title: String,
     content: String,
+    event_loop_toggle: bool,
 }
 
 #[derive(Debug, Deserialize)]
@@ -36,12 +37,19 @@ pub struct UserTableTemplate {
 pub struct UserRowTemplate {
     user: User,
 }
+
+#[derive(Template)]
+#[template(path = "event_loop_toggle.html")]
+struct EventLoopToggleTemplate {
+    event_loop_toggle: bool,
+}
+
 pub struct Handler;
 
 impl Handler {
     pub async fn index(State(app_state): State<AppState>) -> impl IntoResponse {
         let data = app_state.data.clone();
-        println!("{:?}", data);
+        let toggle = *data.event_loop_toggle.lock().await;
 
         let user_template = Self::get_users_template(
             UsersParams {
@@ -56,6 +64,7 @@ impl Handler {
         let template = IndexTemplate {
             title: "Users".to_string(),
             content: user_template.to_string(),
+            event_loop_toggle: toggle,
         };
 
         Html(template.render().unwrap())
@@ -114,5 +123,13 @@ impl Handler {
             sort_order,
             sort_order_icon: sort_order_icon.to_string(),
         }
+    }
+
+    pub async fn toggle_event_loop(State(app_state): State<AppState>) -> impl IntoResponse {
+        let data = app_state.data.clone();
+        data.toggle_event_loop().await;
+        let event_loop_toggle = *data.event_loop_toggle.lock().await;
+        let template = EventLoopToggleTemplate { event_loop_toggle };
+        Html(template.render().unwrap())
     }
 }

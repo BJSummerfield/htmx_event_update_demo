@@ -18,6 +18,8 @@ use tokio::{sync::Mutex, time};
 pub struct Data {
     pub users: Arc<Mutex<HashMap<u32, User>>>,
     event_emitter: Arc<EventEmitter>,
+    pub event_loop_toggle: Arc<Mutex<bool>>,
+    event_loop_handle: Arc<Mutex<Option<tokio::task::JoinHandle<()>>>>,
 }
 
 impl Data {
@@ -37,8 +39,9 @@ impl Data {
         let data = Data {
             users: Arc::new(Mutex::new(users)),
             event_emitter,
+            event_loop_toggle: Arc::new(Mutex::new(false)),
+            event_loop_handle: Arc::new(Mutex::new(None)),
         };
-        data.clone().event_loop();
         data
     }
 
@@ -68,14 +71,41 @@ impl Data {
         }
     }
 
-    fn event_loop(&self) {
+    pub async fn start_event_loop(&self) {
+        let event_loop_toggle = self.event_loop_toggle.clone();
+        let event_loop_handle = self.event_loop_handle.clone();
         let mut cloned_self = self.clone();
-        tokio::spawn(async move {
-            let mut interval = time::interval(Duration::from_millis(500));
+
+        let handle = tokio::spawn(async move {
+            let mut interval = time::interval(Duration::from_millis(5000));
             loop {
                 interval.tick().await;
-                cloned_self.update_random_user().await;
+                if *event_loop_toggle.lock().await {
+                    cloned_self.update_random_user().await;
+                } else {
+                    break;
+                }
             }
         });
+
+        *event_loop_handle.lock().await = Some(handle);
+    }
+
+    pub async fn stop_event_loop(&self) {
+        let mut event_loop_handle = self.event_loop_handle.lock().await;
+        if let Some(handle) = event_loop_handle.take() {
+            handle.abort();
+        }
+    }
+
+    pub async fn toggle_event_loop(&self) {
+        let mut event_loop_toggle = self.event_loop_toggle.lock().await;
+        *event_loop_toggle = !*event_loop_toggle;
+
+        if *event_loop_toggle {
+            self.start_event_loop().await;
+        } else {
+            self.stop_event_loop().await;
+        }
     }
 }

@@ -37,6 +37,7 @@ async fn main() {
         .route("/", get(Handler::index))
         .route("/user", get(Handler::user))
         .route("/users", post(Handler::users))
+        .route("/toggle-event-loop", post(Handler::toggle_event_loop))
         .nest_service("/static", get_service(ServeDir::new("./static")))
         .route("/events", get(sse_handler))
         .with_state(app_state);
