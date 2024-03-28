@@ -52,13 +52,8 @@ impl Data {
                 SafeEmail(EN).fake(),
             );
             let mut users_map = self.users.lock().await;
-            users_map.insert(user_id, updated_user.clone()); // Clone the updated user if needed
-
-            // Emit the updated user event
+            users_map.insert(user_id, updated_user.clone());
             self.event_emitter.send(SseEvent::UserUpdated(user_id));
-
-            // Retrieve the updated user
-            let user = users_map.get(&user_id);
         }
     }
 
@@ -74,12 +69,12 @@ impl Data {
     }
 
     fn event_loop(&self) {
-        let mut cloned_self = self.clone(); // Clone self before moving into the closure
+        let mut cloned_self = self.clone();
         tokio::spawn(async move {
             let mut interval = time::interval(Duration::from_millis(500));
             loop {
                 interval.tick().await;
-                cloned_self.update_random_user().await; // Call update_random_user on cloned self
+                cloned_self.update_random_user().await;
             }
         });
     }
